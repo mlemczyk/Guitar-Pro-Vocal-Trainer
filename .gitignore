@@ -1,0 +1,13 @@
+node_modules/
+dist/
+CLAUDE.local.md
+# Song material never goes in this public repo.
+*.gp
+*.gp5
+*.gpx
+*.mp3
+*.ogg
+*.wav
+*.flac
+stems/
+dev-tabs/

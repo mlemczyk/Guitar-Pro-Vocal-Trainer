@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vocals Trainer</title>
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <header class="bar">
+    <label class="btn primary" title="Open a Guitar Pro file (or drop one on the page)">
+      Open tab<input id="file" type="file" accept=".gp,.gpx,.gp5,.gp4,.gp3" hidden />
+    </label>
+    <select id="track" title="Vocal track" disabled></select>
+    <span class="sep"></span>
+    <button id="restart" class="btn" title="Back to start (Home)" disabled>⏮</button>
+    <button id="play" class="btn primary" title="Play / pause (Space)" disabled>▶</button>
+    <input id="seek" type="range" min="0" max="1" step="0.01" value="0" disabled title="Position (← / → jump 5 s)" />
+    <span id="time" class="mono">0:00</span>
+    <span class="sep"></span>
+    <label title="Playback speed; pitch is kept ([ and ] step it)">Speed
+      <input id="speed" type="range" min="0.5" max="1" step="0.05" value="1" />
+      <span id="speedVal" class="mono">100%</span></label>
+    <label title="Show the melody an octave up or down">Octave
+      <select id="octave"><option value="-1">−1</option><option value="0" selected>0</option><option value="1">+1</option></select></label>
+    <label title="Play the melody as a guide tone"><input id="guide" type="checkbox" /> Guide</label>
+    <label title="Backing track volume">Band <input id="bandVol" type="range" min="0" max="1" step="0.05" value="1" /></label>
+    <span class="sep"></span>
+    <button id="micBtn" class="btn" title="Start the microphone">🎤 Mic off</button>
+    <select id="mic" title="Microphone"></select>
+    <button id="statsBtn" class="btn" title="Saved scores">Stats</button>
+    <button id="setBtn" class="btn" title="Settings">⚙</button>
+  </header>
+
+  <main>
+    <canvas id="roll"></canvas>
+    <aside id="stats" class="panel" hidden></aside>
+    <aside id="settings" class="panel" hidden>
+      <h2>Settings</h2>
+      <label>Mic latency offset <input id="offset" type="range" min="0" max="250" step="5" value="60" />
+        <span id="offsetVal" class="mono">60 ms</span></label>
+      <p class="hint">Raise it if the trail lands to the right of notes you sang in time, lower it if it lands to the left.</p>
+      <label>On-pitch tolerance <input id="tol" type="range" min="20" max="100" step="5" value="50" />
+        <span id="tolVal" class="mono">±50 ¢</span></label>
+      <label><input id="fold" type="checkbox" checked /> Fold the ball to the note's octave</label>
+      <p class="hint">Octaves always count as hits. Folding also draws the ball next to the note, so a low voice on a high part still shows where it sits.</p>
+      <label>Look-ahead <input id="ahead" type="range" min="3" max="10" step="1" value="5" />
+        <span id="aheadVal" class="mono">5 s</span></label>
+      <label>Mic sensitivity <input id="sens" type="range" min="0.002" max="0.03" step="0.001" value="0.006" /></label>
+      <p class="hint" id="micInfo"></p>
+    </aside>
+  </main>
+  <div id="toast" hidden></div>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
