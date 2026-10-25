@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
-# Manual only while the repo is private (Pages needs it public on this plan).
-# When it goes public, restore:  push: { branches: [main] }
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
