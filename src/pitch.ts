@@ -18,6 +18,9 @@ export class PitchTracker {
 
   get running(): boolean { return this.analyser !== null; }
 
+  /** The node being listened to (the mic, or the ?sim stand-in), for calibration. */
+  get input(): AudioNode | null { return this.source ?? this.simNode; }
+
   /** Window length in seconds: the reading describes audio about half this old. */
   get windowSeconds(): number { return this.buf.length / this.ctx.sampleRate; }
 

@@ -28,6 +28,7 @@
     <span class="sep"></span>
     <button id="micBtn" class="btn" title="Start the microphone">🎤 Mic off</button>
     <select id="mic" title="Microphone"></select>
+    <button id="tuneBtn" class="btn" title="Tuner, vocal range and mic latency calibration">🎯 Tune</button>
     <button id="statsBtn" class="btn" title="Saved scores">Stats</button>
     <button id="setBtn" class="btn" title="Settings">⚙</button>
   </header>
@@ -35,11 +36,25 @@
   <main>
     <canvas id="roll"></canvas>
     <aside id="stats" class="panel" hidden></aside>
+    <aside id="calib" class="panel" hidden>
+      <h2>Tuner and calibration</h2>
+      <p class="hint">No song plays here. Sing or hum: the screen shows the note, how many cents off it is, and the range of notes you've held.
+        Press 🎯 Tune again, or play, to go back to the song.</p>
+      <div class="row"><button id="rangeReset" class="btn">Reset range</button></div>
+      <h3>Mic latency</h3>
+      <p class="hint"><b>Sing on the clicks</b> (with headphones): after 4 count-in clicks, sing a short "ta" exactly on each of the next 12.
+        This measures the whole delay between what you hear and what the app judges.</p>
+      <p class="hint"><b>Loopback</b>: hold the headphones against the mic, or play through speakers, and stay quiet.
+        The mic hears 10 clicks directly; this measures the audio system alone.</p>
+      <div class="row"><button id="calSing" class="btn primary">Sing on the clicks</button><button id="calLoop" class="btn">Loopback</button></div>
+      <p id="calStatus" class="hint"></p>
+      <p id="calCurrent" class="hint"></p>
+    </aside>
     <aside id="settings" class="panel" hidden>
       <h2>Settings</h2>
-      <label>Mic latency offset <input id="offset" type="range" min="0" max="250" step="5" value="60" />
+      <label>Mic latency offset <input id="offset" type="range" min="0" max="400" step="1" value="60" />
         <span id="offsetVal" class="mono">60 ms</span></label>
-      <p class="hint">Raise it if the trail lands to the right of notes you sang in time, lower it if it lands to the left.</p>
+      <p class="hint">Kept per microphone. Measure it in 🎯 Tune, or set it by ear: raise it if the trail lands to the right of notes you sang in time, lower it if it lands to the left.</p>
       <label>On-pitch tolerance <input id="tol" type="range" min="20" max="100" step="5" value="50" />
         <span id="tolVal" class="mono">±50 ¢</span></label>
       <label><input id="fold" type="checkbox" checked /> Fold the ball to the note's octave</label>

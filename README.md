@@ -30,6 +30,7 @@ it too and the ball follows the band instead of you.
 | Guide | Plays the melody as a soft tone, for learning a song. |
 | Band | Backing-track volume. |
 | ← / →, click the roll | Jump 5 s, or jump to the clicked spot. |
+| 🎯 Tune | A tuner with no song: the note you're singing, cents off, a pitch trace, and the range of notes you've held. Also measures the mic latency (below). |
 | Stats | Saved scores per song, the lines you miss most (click one to jump to it), and every song you've practised. |
 | ⚙ | Mic latency offset, on-pitch tolerance, look-ahead, mic sensitivity. |
 
@@ -40,11 +41,20 @@ the mic is on. Scores are kept in this browser (IndexedDB). **Export** and
 
 ### Latency
 
-The backing track's output latency is taken into account automatically.
-What's left is the microphone's input latency plus the pitch analysis window,
-about 60 ms by default. If your trail lands consistently to the right of
-notes you sang in time, raise **Mic latency offset** in ⚙. If it lands to
-the left, lower it.
+Sound takes time to reach your ears, and your voice takes time to reach the
+app. Measure it once per microphone in **🎯 Tune**:
+
+- **Sing on the clicks** (with headphones): four count-in clicks, then sing a
+  short "ta" on each of the next 12. This measures everything between what
+  you hear and what the app judges, including Bluetooth delay, so it's the
+  one to use.
+- **Loopback**: hold the headphones to the mic, or play through speakers, and
+  stay quiet while 10 clicks play. This measures the audio system alone.
+
+Either one sets **Mic latency offset** (in ⚙), which is remembered per
+microphone. You can also set it by ear: if your trail lands consistently to
+the right of notes you sang in time, raise it; if it lands to the left, lower
+it.
 
 ### What a tab needs
 
@@ -84,8 +94,11 @@ from those projects is used.
   without (to sing it), and with bass or without (to sing while someone plays
   bass live). This needs stems made once per song by source separation; the
   app would load them next to the `.gp` file and mix them live.
-- Loop a line, a key transpose of the backing track, and a calibration step
-  for the mic latency.
+- Loop a line, and a key transpose of the backing track.
+- **Phones (Chrome on Android)**, once hosted on HTTPS: a landscape layout
+  with a compact toolbar, touch controls, a screen wake lock, and a web app
+  manifest so it installs to the home screen and works offline. Use wired or
+  USB-C headphones; Bluetooth adds 150–300 ms that the browser misreports.
 
 ## Licence
 

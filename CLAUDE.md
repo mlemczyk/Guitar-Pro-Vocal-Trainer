@@ -29,7 +29,15 @@ and tests are fine.
   AudioContext clock, minus output latency.
 - `src/pitch.ts`: mic → AnalyserNode → pitchy (McLeod). `startFromNode()`
   is the `?sim` test mode.
-- `src/view.ts`: canvas drawing only. `src/stats.ts`: IndexedDB attempts.
+- `src/calibrate.ts`: latency measurement. Clicks play while an AudioWorklet
+  records the mic on the same AudioContext clock; `findArrivals()` (pure,
+  tested) finds each onset. Offset = round trip − reported output latency +
+  half the pitch window, because `Player.position()` already subtracts the
+  reported output latency. Firefox may report 0 output latency, which the
+  measured round trip corrects. Signalsmith compensates its own latency when
+  scheduled, so the backing, the guide and the clicks share one timeline.
+- `src/view.ts`: canvas drawing only (`View` for songs, `TunerView` for 🎯 Tune).
+  `src/stats.ts`: IndexedDB attempts.
 - `src/main.ts`: the UI wiring. Judging runs on a 16 ms `setInterval` and
   drawing on `requestAnimationFrame`. That way scoring continues in a
   background window (Chrome doesn't throttle timers in a tab playing audio).
@@ -51,6 +59,9 @@ and tests are fine.
   before driving a `?sim` run. A test file is loaded by fetching
   `/dev-tabs/<name>.gp` and dispatching a synthetic `drop` event. In dev,
   `window.__vt` exposes the player, tracker, song and judge.
+- The mic offset is stored per input deviceId (`offsets` in the prefs). In
+  `?sim`, loopback calibration routes the clicks into the stand-in input and
+  must read a round trip of about 0 ms; that's the end-to-end check.
 - Speed below 0.75x sounds smeary (a Signalsmith limit). Notes and lyrics
   stay correct.
 

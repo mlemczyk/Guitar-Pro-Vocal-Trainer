@@ -194,6 +194,130 @@ export class View {
   }
 }
 
+export interface TunerFrame {
+  now: number;                                  // seconds, same clock as the trace
+  trace: { t: number; midi: number | null }[];
+  midi: number | null;                          // current reading
+  tolerance: number;                            // cents counted as on pitch
+  range: [number, number] | null;               // lowest / highest held note
+  status: string;                               // calibration progress, if any
+}
+
+export class TunerView {
+  private ctx: CanvasRenderingContext2D;
+  private centre = 60;
+  seconds = 8;
+  constructor(private canvas: HTMLCanvasElement) { this.ctx = canvas.getContext("2d")!; }
+
+  draw(f: TunerFrame): void {
+    const dpr = window.devicePixelRatio || 1;
+    const W = this.canvas.clientWidth, H = this.canvas.clientHeight;
+    if (this.canvas.width !== Math.round(W * dpr) || this.canvas.height !== Math.round(H * dpr)) {
+      this.canvas.width = Math.round(W * dpr);
+      this.canvas.height = Math.round(H * dpr);
+    }
+    const g = this.ctx;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = C.bg;
+    g.fillRect(0, 0, W, H);
+
+    const hudH = 44, footH = 56;
+    const top = hudH, rollH = H - hudH - footH;
+    const lane = Math.min(rollH / 25, 30);
+    const half = rollH / lane / 2;
+    // Follow the voice, but only re-centre when it nears the edge.
+    if (f.midi !== null && Math.abs(f.midi - this.centre) > half * 0.6) this.centre = Math.round(f.midi);
+    const hi = this.centre + half - 0.5;
+    const y = (m: number) => top + (hi - m + 0.5) * lane;
+    const nowX = W * 0.62;
+    const pps = nowX / this.seconds;
+    const x = (t: number) => nowX - (f.now - t) * pps;
+
+    g.textBaseline = "middle";
+    for (let m = Math.ceil(this.centre - half + 0.5); m <= hi; m++) {
+      const pc = ((m % 12) + 12) % 12;
+      g.fillStyle = [1, 3, 6, 8, 10].includes(pc) ? C.laneB : C.laneA;
+      g.fillRect(0, y(m) - lane / 2, W, lane);
+      if (pc === 0) { g.fillStyle = C.cLine; g.fillRect(0, y(m) + lane / 2 - 1, W, 1); }
+      g.fillStyle = pc === 0 ? C.dim : C.label;
+      g.font = `${Math.min(13, lane * 0.55)}px system-ui, sans-serif`;
+      g.textAlign = "left";
+      g.fillText(noteName(m), 6, y(m));
+    }
+    if (f.range) {
+      g.fillStyle = "rgba(55,196,107,0.08)";
+      const y0 = y(f.range[1]) - lane / 2, y1 = y(f.range[0]) + lane / 2;
+      g.fillRect(0, y0, nowX, y1 - y0);
+    }
+    g.fillStyle = C.now;
+    g.fillRect(nowX - 1, top, 2, rollH);
+
+    // Trace, green where within tolerance of the nearest semitone.
+    g.lineWidth = 3;
+    g.lineCap = "round";
+    for (let i = 1; i < f.trace.length; i++) {
+      const a = f.trace[i - 1], b = f.trace[i];
+      if (a.midi === null || b.midi === null || Math.abs(a.midi - b.midi) > 1.5 || b.t < f.now - this.seconds) continue;
+      g.strokeStyle = Math.abs(b.midi - Math.round(b.midi)) * 100 <= f.tolerance ? C.hit : C.trail;
+      g.beginPath();
+      g.moveTo(x(a.t), y(a.midi));
+      g.lineTo(x(b.t), y(b.midi));
+      g.stroke();
+    }
+
+    // Readout to the right of the now line.
+    const rx = nowX + (W - nowX) / 2;
+    if (f.midi !== null) {
+      const by = Math.max(top + 8, Math.min(top + rollH - 8, y(f.midi)));
+      const cents = Math.round((f.midi - Math.round(f.midi)) * 100);
+      const on = Math.abs(cents) <= f.tolerance;
+      g.shadowColor = on ? C.hit : "rgba(255,255,255,0.8)";
+      g.shadowBlur = 18;
+      g.fillStyle = on ? "#b8ffd2" : C.ball;
+      g.beginPath();
+      g.arc(nowX, by, 9, 0, Math.PI * 2);
+      g.fill();
+      g.shadowBlur = 0;
+
+      const cy = top + rollH * 0.42;
+      g.textAlign = "center";
+      g.fillStyle = on ? C.hit : C.text;
+      g.font = `700 ${Math.min(96, (W - nowX) * 0.28)}px system-ui, sans-serif`;
+      g.fillText(noteName(f.midi), rx, cy);
+      // Cents meter.
+      const mw = Math.min(320, (W - nowX) * 0.75), my = cy + 70;
+      g.fillStyle = "#262a35";
+      g.fillRect(rx - mw / 2, my - 3, mw, 6);
+      g.fillStyle = "rgba(55,196,107,0.35)";
+      g.fillRect(rx - (mw / 2) * (f.tolerance / 50), my - 3, mw * (f.tolerance / 50), 6);
+      g.fillStyle = on ? C.hit : C.text;
+      g.fillRect(rx + (cents / 50) * (mw / 2) - 2, my - 12, 4, 24);
+      g.font = "16px system-ui, sans-serif";
+      g.fillStyle = C.dim;
+      g.fillText(`${cents > 0 ? "+" : ""}${cents} ¢   ·   ${(440 * 2 ** ((f.midi - 69) / 12)).toFixed(1)} Hz`, rx, my + 30);
+    } else {
+      g.textAlign = "center";
+      g.fillStyle = C.dim;
+      g.font = "18px system-ui, sans-serif";
+      g.fillText("Sing or hum a note", rx, top + rollH * 0.42);
+    }
+
+    g.textAlign = "left";
+    g.fillStyle = C.text;
+    g.font = "600 18px system-ui, sans-serif";
+    g.fillText("Tuner", 14, hudH / 2);
+    g.font = "16px system-ui, sans-serif";
+    g.fillStyle = C.dim;
+    g.fillText(f.range ? `Range held this session: ${noteName(f.range[0])} – ${noteName(f.range[1])}` : "Hold a note for a moment to start your range", 14, top + rollH + footH / 2);
+    if (f.status) {
+      g.textAlign = "right";
+      g.fillStyle = C.text;
+      g.font = "600 18px system-ui, sans-serif";
+      g.fillText(f.status, W - 14, hudH / 2);
+    }
+  }
+}
+
 export function noteName(m: number): string {
   const r = Math.round(m);
   return `${NAMES[((r % 12) + 12) % 12]}${Math.floor(r / 12) - 1}`;
