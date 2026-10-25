@@ -11,8 +11,10 @@ changing its pitch.
 
 ## Use it
 
-1. Open the app in Chrome or Edge, either the hosted page or `npm run dev`
-   locally.
+1. Open the app in Chrome or Edge: the hosted page,
+   **https://mlemczyk.github.io/Guitar-Pro-Vocal-Trainer/**, or `npm run dev`
+   locally. Your tabs never leave your computer; the page reads them in the
+   browser.
 2. **Open tab** (or drop a `.gp` file on the page). The vocal track is picked
    automatically: the track with lyrics, or one named like "Vocals". Change
    it in the track list.
