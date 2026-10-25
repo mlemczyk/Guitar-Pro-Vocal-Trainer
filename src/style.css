@@ -5,8 +5,10 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px system-ui, sans-serif; }
-body { display: flex; flex-direction: column; }
-.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+/* An app shell: the page itself never scrolls; panels scroll inside. */
+html, body { overflow: hidden; }
+body { display: flex; flex-direction: column; width: 100%; }
+.bar { flex: none; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
 .bar label { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); }
 .sep { width: 1px; height: 22px; background: var(--line); }
 .btn { background: var(--btn); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; font: inherit; }
@@ -14,12 +16,14 @@ body { display: flex; flex-direction: column; }
 .btn.primary { background: #1f6b3e; border-color: #2a8a51; }
 .btn.on { background: #6b1f2a; border-color: #8a2a3a; }
 select, input[type=range] { accent-color: var(--accent); }
-select { background: var(--btn); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; max-width: 260px; }
+select { background: var(--btn); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; max-width: 260px; min-width: 0; text-overflow: ellipsis; }
 #seek { width: min(28vw, 360px); }
 .mono { font-variant-numeric: tabular-nums; min-width: 3.2em; color: var(--text); }
-main { flex: 1; position: relative; min-height: 0; display: flex; }
-#roll { flex: 1; width: 100%; height: 100%; display: block; cursor: pointer; }
-.panel { width: min(420px, 90vw); background: var(--panel); border-left: 1px solid var(--line); padding: 14px 16px; overflow-y: auto; }
+main { flex: 1; position: relative; min-height: 0; min-width: 0; display: flex; overflow: hidden; }
+/* width 0 + flex-grow: the canvas's pixel size (clientWidth x devicePixelRatio)
+   must never feed back into layout and push the page wider than the window. */
+#roll { flex: 1 1 0; width: 0; min-width: 0; height: 100%; min-height: 0; display: block; cursor: pointer; }
+.panel { flex: none; width: min(420px, 90%); background: var(--panel); border-left: 1px solid var(--line); padding: 14px 16px; overflow-y: auto; }
 .panel h2 { margin: 0 0 10px; font-size: 16px; }
 .panel h3 { margin: 18px 0 6px; font-size: 14px; color: var(--dim); font-weight: 600; }
 .panel label { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; }
